@@ -26,7 +26,7 @@ sub count {
 }
 sub score {
     my ($w,$a,@h) = @_;
-    my $score =0;
+    my $score = 0;
     for (my $k =0; $k < length($w); $k++){
 	my $c = substr($w,$k,1);
 	if ($k == index($w,$c)) { # FIRST IN WORD
@@ -48,10 +48,6 @@ for (my $i=0; $i < length($fives); $i++) {
 	$histogram[$d]++;
     }
 }
-# for (my $i=0;$i<length($alpha);$i++){
-#     print substr($alpha,$i,1) . " $histogram[$i] \n";
-# }
-# print "ratio (".score("ratio",$alpha,@histogram). ")\n";
 my $maxscore = 0;
 my $maxword = '';
 foreach my $word (split("\n",$fives)){
@@ -61,7 +57,8 @@ foreach my $word (split("\n",$fives)){
 	$maxword=$word;
     }
 }
-$ARGV[1] eq "-q" || print "Suggusted word : $maxword (" .$maxscore .")\n\n";
+$maxword =~ s/^\s+|\s+$//g;
+$ARGV[1] eq "-q" || printf("Suggusted try: $maxword (%d) \n\n",$maxscore);
 my @l = ($alpha,$alpha,$alpha,$alpha,$alpha);
 my $wrongplace = "";
 $ARGV[1] eq "-q" || print("input WORD [Y|N|y]{5}\nWHERE:\n\nWORD -five letter word\nYNy -whether each caracter is:\n\tY--In the right spot\n\ty--In the word,or\n\tn--not in word\nexample: ratio Ynyyy\n\ninput WORD [Y|N|y]{5}(cntl-c to quit)> ");
@@ -110,18 +107,17 @@ while ($line=readline(STDIN)){
 	    $maxword=$word;
 	}
     }
-    
-
+    $maxword =~ s/^\s+|\s+$//g;
+    my $count = count($fives,"\n");
     if ($ARGV[1] eq "-q") {
-	print $fives."\n";
+	print "$maxword $count\n";
     } else {
-	my $count = count($fives,"\n");
 	if ($count < 20) {
 	    print "\n$count matches\n$fives\n\n";	
 	} else {
 	    print "\n$count matches\n" . `echo \"$fives\" | shuf -n 20` ."\n\n";
 	}
-	$ARGV[1] eq "-q" || print "Suggusted word : $maxword (" .$maxscore .")\n\n";
+	$ARGV[1] eq "-q" || printf("Suggusted try: $maxword (%d) \n\n",$maxscore);
 	print("input WORD [Y|N|y]{5}(cntl-c to quit)> ");
     }
     

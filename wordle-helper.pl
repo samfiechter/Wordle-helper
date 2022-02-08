@@ -1,5 +1,5 @@
 #!/usr/bin/perl
--e 'corncob_lowercase.txt' || system("wget http://www.mieliestronk.com/corncob_lowercase.txt");  #don't really know what this is--just looks like raw english words
+-e 'corncob_lowercase.txt' || system("wget http://www.mieliestronk.com/corncob_lowercase.txt");
 -e 'fives.txt'  || system("cat corncob_lowercase.txt | grep -e '^......$' > fives.txt");
 sub remove{
     my ($l,$s) = @_;
@@ -24,11 +24,47 @@ sub count {
     }
     return $z;
 }
+sub score {
+    my ($w,$a,@h) = @_;
+    my $score =0;
+    for (my $k =0; $k < length($w); $k++){
+	my $c = substr($w,$k,1);
+	if ($k == index($w,$c)) { # FIRST IN WORD
+	    my $idx=index($a,$c);
+	    if ($idx != -1){
+		$score += $h[$idx];
+	    }
+	}
+    }
+    return $score;
+}
 my $fives = `cat fives.txt`; 				
 my $alpha = 'abcdefghijklmnopqrstuvwxyz';
+my @histogram = (0) x 26;
+for (my $i=0; $i < length($fives); $i++) {
+    my $c = substr($fives,$i,1);
+    my $d = index($alpha,$c);
+    if (-1 != $d){
+	$histogram[$d]++;
+    }
+}
+# for (my $i=0;$i<length($alpha);$i++){
+#     print substr($alpha,$i,1) . " $histogram[$i] \n";
+# }
+# print "ratio (".score("ratio",$alpha,@histogram). ")\n";
+my $maxscore = 0;
+my $maxword = '';
+foreach my $word (split("\n",$fives)){
+    my $ws = score($word,$alpha,@histogram);
+    if ($ws > $maxscore){
+	$maxscore=$ws;
+	$maxword=$word;
+    }
+}
+$ARGV[1] eq "-q" || print "Suggusted word : $maxword (" .$maxscore .")\n\n";
 my @l = ($alpha,$alpha,$alpha,$alpha,$alpha);
 my $wrongplace = "";
-print("input WORD [Y|N|y]{5}\nWHERE:\n\nWORD -five letter word\nYNy -whether each caracter is:\n\tY--In the right spot\n\ty--In the word,or\n\tn--not in word\nexample: ratio Ynyyy\n\ninput WORD [Y|N|y]{5}(cntl-c to quit)> ");
+$ARGV[1] eq "-q" || print("input WORD [Y|N|y]{5}\nWHERE:\n\nWORD -five letter word\nYNy -whether each caracter is:\n\tY--In the right spot\n\ty--In the word,or\n\tn--not in word\nexample: ratio Ynyyy\n\ninput WORD [Y|N|y]{5}(cntl-c to quit)> ");
 while ($line=readline(STDIN)){
     my ($word,$yn) = split(' ',$line);
     $wrongplace = "";
@@ -65,11 +101,28 @@ while ($line=readline(STDIN)){
     } else {
 	$fives = `echo "$fives" | grep -e "$g"  `;
     }
-    my $count = count($fives,"\n");
-    if ($count < 20) {
-	print "\n$count matches\n$fives\n\n";	
-    } else {
-	print "\n$count matches\n" . `echo \"$fives\" | head -n 20` ."\n\n";
+    $maxscore = 0;
+    $maxword = '';
+    foreach my $word (split("\n",$fives)) {
+	my $ws = score($word,$alpha,@histogram);
+	if ($ws > $maxscore){
+	    $maxscore=$ws;
+	    $maxword=$word;
+	}
     }
-    print("input WORD [Y|N|y]{5}(cntl-c to quit)> ");
+    
+
+    if ($ARGV[1] eq "-q") {
+	print $fives."\n";
+    } else {
+	my $count = count($fives,"\n");
+	if ($count < 20) {
+	    print "\n$count matches\n$fives\n\n";	
+	} else {
+	    print "\n$count matches\n" . `echo \"$fives\" | shuf -n 20` ."\n\n";
+	}
+	$ARGV[1] eq "-q" || print "Suggusted word : $maxword (" .$maxscore .")\n\n";
+	print("input WORD [Y|N|y]{5}(cntl-c to quit)> ");
+    }
+    
 }

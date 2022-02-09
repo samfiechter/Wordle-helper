@@ -106,9 +106,9 @@ while ($line=readline(STDIN)){
         print "$maxword $count\n";
     } else {
         if ($count < 20) {
-            print "\n$count matches\nword score\n$fives\n\n";
+            print "\n$count matches\nword  score\n$fives\n\n";
         } else {
-            print "\n$count matches\nword score\n" . `echo \"$fives\" | head -n 20` ."\n\n";
+            print "\n$count matches\nword  score\n" . `echo \"$fives\" | head -n 20` ."\n\n";
         }
         $ARGV[1] eq "-q" || print("Recommend: $maxword \n\n");
         print("input WORD [Y|N|y]{5}(cntl-c to quit)> ");

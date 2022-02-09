@@ -2,6 +2,7 @@
 -e 'fives.txt' || die("Run this command\n\ncurl -s http://www.mieliestronk.com/corncob_lowercase.txt | grep -e '^......\$' > fives.txt\n\n");
 sub remove{
     my ($l,$s) = @_;
+    1 == length($s) && return $s;
     my $i = index($s,$l);
     if(-1 != $i){
         my $len = length($s);
@@ -38,25 +39,8 @@ sub score {
     return $score;
 }
 
-sub findmaxword {
-    my ($f,$a, @hi) = @_;
-    my $mw = "";
-    my $mxs = 0;
-    for my $w ( split(/^/, $f) ) {	
-	$w =~ s/^\s+|\s+$//g;
-        my $ws = score($w,$a,@hi);
-        if ($ws > $mxs){
-            $mxs = $ws;
-            $mw = $w;
-        }
-    }
-    $mw =~ s/^\s+|\s+$//g;
-    return $mw;
-}
 
-
-
-my $fives = `cat fives.txt`;
+my $fives =  `cat fives.txt`;
 my $alpha = 'abcdefghijklmnopqrstuvwxyz';
 my @histogram = (0) x 26;
 for (my $i=0; $i < length($fives); $i++) {
@@ -67,9 +51,18 @@ for (my $i=0; $i < length($fives); $i++) {
     }
 }
 
+my $fives = "";
+for $w ( split(/\n/, `cat fives.txt`)) {
+    $w =~ s/^\s+|\s+$//g;
+    $fives .= sprintf("$w %d\n", score($w,$alpha,@histogram));
+}
+
+$fives = `printf "$fives" | sort -k 2 -g -r`;
+
+my $maxword = substr($fives,0,5);
 my @l = ($alpha,$alpha,$alpha,$alpha,$alpha);
 my $wrongplace = "";
-my $maxword = findmaxword($fives, $alpha, @histogram);
+
 $ARGV[1] eq "-q" || print("input WORD [Y|N|y]{5}\nWHERE:\n\nWORD -five letter word\nYNy -whether each caracter is:\n\tY--In the right spot\n\ty--In the word,or\n\tn--not in word\nexample: ratio Ynyyy\n\nRecommend: $maxword \n\ninput WORD [Y|N|y]{5}(cntl-c to quit)> ");
 while ($line=readline(STDIN)){
     my ($word,$yn) = split(' ',$line);
@@ -103,21 +96,22 @@ while ($line=readline(STDIN)){
     if ($wrongplace ne "") {
         my $wpg = "| grep " . join(" | grep ",split(undef,$wrongplace));
         print $wpg . "\n\n";
-        $fives = `echo "$fives" | grep -e "$g" $wpg `;
+        $fives = `printf "$fives" | grep -e "$g" $wpg `;
     } else {
-        $fives = `echo "$fives" | grep -e "$g"  `;
+        $fives = `printf "$fives" | grep -e "$g"  `;
     }
-    $maxword = findmaxword($fives, $alpha, @histogram);
+    $maxword = substr($fives,0,5);
     my $count = count($fives,"\n");
     if ($ARGV[1] eq "-q") {
         print "$maxword $count\n";
     } else {
         if ($count < 20) {
-            print "\n$count matches\n$fives\n\n";
+            print "\n$count matches\nword score\n$fives\n\n";
         } else {
-            print "\n$count matches\n" . `echo \"$fives\" | shuf -n 20` ."\n\n";
+            print "\n$count matches\nword score\n" . `echo \"$fives\" | head -n 20` ."\n\n";
         }
         $ARGV[1] eq "-q" || print("Recommend: $maxword \n\n");
         print("input WORD [Y|N|y]{5}(cntl-c to quit)> ");
     }
+
 }

@@ -10,7 +10,7 @@ It will give you some hints!
 It works by selecting the words that will eliminate the most number of choices... then ranking the rmaining words agian.
 example ::
 
-~/Desktop/wordle [08:16:53] ./wordle-solver.pl
+`~/Desktop/wordle [08:16:53] ./wordle-solver.pl
 input WORD [Y|N|y]{5}
 WHERE:
 
@@ -94,3 +94,4 @@ input WORD [Y|N|y]{5}(cntl-c to quit)> humor YYYYY
 Got it in 4 tries!!
 
 ~/Desktop/wordle [08:17:46]
+`

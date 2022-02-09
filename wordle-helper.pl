@@ -1,5 +1,6 @@
 #!/usr/bin/perl
--e 'fives.txt' || die("Run this command\n\ncurl -s https://raw.githubusercontent.com/dwyl/english-words/master/words.zip\nunzip words.zip\ncat words.txt | grep -e \"^[a-z]\\{5\\}\\\$\" > fives.txt\n\n");
+-e 'fives.txt' || die("Run this command\n\ncurl -s https://raw.githubusercontent.com/dwyl/english-words/master/words.zip \n unzip words.zip \ncat words.txt | grep -e \"^[a-z]\\{5\\}\\\$\" > fives.txt\n\n");
+
 sub remove{
     my ($l,$s) = @_;
     1 == length($s) && return $s;
@@ -67,7 +68,9 @@ my $maxword = substr($fives,0,5);
 my @l = ($alpha,$alpha,$alpha,$alpha,$alpha);
 my $wrongplace = "";
 my $tries = 0;
-$ARGV[1] eq "-q" || print("input WORD [Y|N|y]{5}\nWHERE:\n\nWORD -five letter word\nYNy -whether each caracter is:\n\tY--In the right spot\n\ty--In the word,or\n\tn--not in word\nexample: ratio Ynyyy\n\nRecommend: $maxword \n\ninput WORD [Y|N|y]{5}(cntl-c to quit)> ");
+my $top = `printf "$fives" | head -n 5`;
+my $count = count($fives,"\n");
+$ARGV[1] eq "-q" || print("input WORD [Y|N|y]{5}\nWHERE:\n\nWORD -five letter word\nYNy -whether each caracter is:\n\tY--In the right spot\n\ty--In the word,or\n\tn--not in word\nexample: ratio Ynyyy\n\n\n$count words in db\n\n$top\n\nRecommend: $maxword \n\ninput WORD [Y|N|y]{5}(cntl-c to quit)> ");
 while ($line=readline(STDIN)){
     my ($word,$yn) = split(' ',$line);
     $tries++;
@@ -107,14 +110,14 @@ while ($line=readline(STDIN)){
     }
     $fives = wordsort($fives,$alpha);
     $maxword = substr($fives,0,5);
-    my $count = count($fives,"\n");
+    $count = count($fives,"\n");
     if ($ARGV[1] eq "-q") {
         print "$maxword $count\n";
     } else {
         if ($count < 20) {
-            print "\n$count matches\n$fives\n\n";
+            print "\n$count matches\n\n$fives\n\n";
         } else {
-            print "\n$count matches\n" . `echo \"$fives\" | head -n 20` ."\n\n";
+            print "\n$count matches\n\n" . `echo \"$fives\" | head -n 20` ."\n\n";
         }
         $ARGV[1] eq "-q" || print("Recommend: $maxword \n\n");
         print("input WORD [Y|N|y]{5}(cntl-c to quit)> ");

@@ -66,10 +66,12 @@ $fives = wordsort($fives,$alpha);
 my $maxword = substr($fives,0,5);
 my @l = ($alpha,$alpha,$alpha,$alpha,$alpha);
 my $wrongplace = "";
-
+my $tries = 0;
 $ARGV[1] eq "-q" || print("input WORD [Y|N|y]{5}\nWHERE:\n\nWORD -five letter word\nYNy -whether each caracter is:\n\tY--In the right spot\n\ty--In the word,or\n\tn--not in word\nexample: ratio Ynyyy\n\nRecommend: $maxword \n\ninput WORD [Y|N|y]{5}(cntl-c to quit)> ");
 while ($line=readline(STDIN)){
     my ($word,$yn) = split(' ',$line);
+    $tries++;
+    $yn eq "YYYYY" && die "Got it in $tries tries!!\n\n";
     $wrongplace = "";
     for (my $i=0;$i<5;$i++){
         my $char = substr($word,$i,1);

@@ -1,6 +1,5 @@
 #!/usr/bin/perl
--e 'fives.txt' || die("Run this command\n\ncurl -s https://raw.githubusercontent.com/dwyl/english-words/master/words.zip \n unzip words.zip \ncat words.txt | tr '[:upper:]' '[:lower:]' | grep -e '^.....\$' > fives.txt\n\n");
-
+-e 'fives.txt' || die("Run this command\n\ncurl -s https://raw.githubusercontent.com/dwyl/english-words/master/words.zip\nunzip words.zip\ncat words.txt | grep -e \"^[a-z]\\{5\\}\\\$\" > fives.txt\n\n");
 sub remove{
     my ($l,$s) = @_;
     1 == length($s) && return $s;

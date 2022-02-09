@@ -39,26 +39,30 @@ sub score {
     return $score;
 }
 
-
-my $fives =  `cat fives.txt`;
-my $alpha = 'abcdefghijklmnopqrstuvwxyz';
-my @histogram = (0) x 26;
-for (my $i=0; $i < length($fives); $i++) {
-    my $c = substr($fives,$i,1);
-    my $d = index($alpha,$c);
-    if (-1 != $d){
-        $histogram[$d]++;
+sub wordsort {
+    my ($f,$a) = @_;
+    my @histogram = (0) x 26;
+   
+    for (my $i=0; $i < length($f); $i++) {
+        my $c = substr($f,$i,1);
+        my $d = index($a,$c);
+        if (-1 != $d){
+            $histogram[$d]++;
+        }
     }
+
+    my $ret = "";
+    for my $w ( split(/\n/,$f)) {
+        $w =~ s/^\s+|\s+$//g;
+        $ret .= sprintf("$w %d\n", score($w,$a,@histogram));
+    }
+
+    return `printf "$ret" | sort -k 2 -g -r | sed 's/ .*\$//g'`;
 }
-
-my $fives = "";
-for $w ( split(/\n/, `cat fives.txt`)) {
-    $w =~ s/^\s+|\s+$//g;
-    $fives .= sprintf("$w %d\n", score($w,$alpha,@histogram));
-}
-
-$fives = `printf "$fives" | sort -k 2 -g -r`;
-
+    
+my $alpha = 'abcdefghijklmnopqrstuvwxyz';
+my $fives = `cat fives.txt`;
+$fives = wordsort($fives,$alpha);
 my $maxword = substr($fives,0,5);
 my @l = ($alpha,$alpha,$alpha,$alpha,$alpha);
 my $wrongplace = "";
@@ -94,21 +98,21 @@ while ($line=readline(STDIN)){
         }
     }
     if ($wrongplace ne "") {
-        my $wpg = "| grep " . join(" | grep ",split(undef,$wrongplace));
-        print $wpg . "\n\n";
-        $fives = `printf "$fives" | grep -e "$g" $wpg `;
+        my $wpg = join(" | grep ",split(undef,$wrongplace));
+        $fives = `printf "$fives" | grep -e "$g" | grep $wpg `;
     } else {
         $fives = `printf "$fives" | grep -e "$g"  `;
     }
+    $fives = wordsort($fives,$alpha);
     $maxword = substr($fives,0,5);
     my $count = count($fives,"\n");
     if ($ARGV[1] eq "-q") {
         print "$maxword $count\n";
     } else {
         if ($count < 20) {
-            print "\n$count matches\nword  score\n$fives\n\n";
+            print "\n$count matches\n$fives\n\n";
         } else {
-            print "\n$count matches\nword  score\n" . `echo \"$fives\" | head -n 20` ."\n\n";
+            print "\n$count matches\n" . `echo \"$fives\" | head -n 20` ."\n\n";
         }
         $ARGV[1] eq "-q" || print("Recommend: $maxword \n\n");
         print("input WORD [Y|N|y]{5}(cntl-c to quit)> ");
